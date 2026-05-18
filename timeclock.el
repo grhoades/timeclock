@@ -138,7 +138,7 @@ NOTES are optional notes."
           (is-feature (timeclock//bool-to-int (y-or-n-p timeclock/feature-text)))
           (today (format-time-string "%Y-%m-%d "))
           (start-str (read-string "Start time (YYYY-MM-DD HH:MM, 24hr): " today))
-          (end-str (read-string "End time (YYYY-MM-DD HH:MM, 24hr): " 
+          (end-str (read-string "End time (YYYY-MM-DD HH:MM, 24hr): "
                                 (if (string-match "^\\([0-9]\\{4\\}-[0-9]\\{2\\}-[0-9]\\{2\\} \\)" start-str)
                                     (match-string 1 start-str)
                                   today)))
@@ -380,67 +380,67 @@ attributes present in the daily detail section of the report."
   "Attempt to restore point after an edit action.
 
 XXX: This macro is not hygenic; call it a WIP."
-    `(let ((eid (eid (car (last obj))))
-       ,body
-       (goto-char (point-min))
-       (if (search-forward (concat "entry-id:" (number-to-string eid)) nil t)
-           (beginning-of-line)
-         (goto-char (point-min)))))
+  `(let ((eid (eid (car (last obj))))
+         ,body
+         (goto-char (point-min))
+         (if (search-forward (concat "entry-id:" (number-to-string eid)) nil t)
+             (beginning-of-line)
+           (goto-char (point-min))))))
 
 (defun timeclock//set-object-flag (obj)
   "A vtable action to toggle the is-feature flag."
   (timeclock//do-object-action obj
-   (let ((id (car (last obj))))
-     (timeclock//db-toggle-record-flag id)
-     (timeclock/report nil timeclock/last-report-span))))
+                               (let ((id (car (last obj))))
+                                 (timeclock//db-toggle-record-flag id)
+                                 (timeclock/report nil timeclock/last-report-span))))
 
 (defun timeclock//delete-object (obj)
   "A vtable action to delete the current object."
   (timeclock//do-object-action obj
-   (let ((id (car (last obj)))
-         (task (nth 3 obj)))
-     (if (funcall timeclock/delete-confirmation (format "Delete \"%s\"" task))
-         (progn
-           (timeclock//db-delete-record id)
-           (timeclock/report nil timeclock/last-report-span))
-       (message "Cancelled")))))
+                               (let ((id (car (last obj)))
+                                     (task (nth 3 obj)))
+                                 (if (funcall timeclock/delete-confirmation (format "Delete \"%s\"" task))
+                                     (progn
+                                       (timeclock//db-delete-record id)
+                                       (timeclock/report nil timeclock/last-report-span))
+                                   (message "Cancelled")))))
 
 (defun timeclock//set-object-task (obj)
   "A vtable action to change the task text."
   (timeclock//do-object-action obj
-   (let* ((id (car (last obj)))
-          (old-task (nth 3 obj))
-          (new-task (completing-read
-                     (format "Replace task \"%s\" with: " old-task)
-                     (timeclock//tasks))))
-     (timeclock//db-update-task id new-task)
-     (timeclock/report nil timeclock/last-report-span))))
+                               (let* ((id (car (last obj)))
+                                      (old-task (nth 3 obj))
+                                      (new-task (completing-read
+                                                 (format "Replace task \"%s\" with: " old-task)
+                                                 (timeclock//tasks))))
+                                 (timeclock//db-update-task id new-task)
+                                 (timeclock/report nil timeclock/last-report-span))))
 
 (defun timeclock//adjust-object-time (obj)
   "A vtable action to adjust the punch in/out time."
   (timeclock//do-object-action obj
-   (let* ((id (car (last obj)))
-          (task (timeclock//db-get-task id)))
-     (-let (((title is-feature punch-in punch-out notes duration entry-id) (car task)))
-       (let* ((punch-in-time (format-time-string "%R" (seconds-to-time punch-in)))
-              (punch-out-time (format-time-string "%R" (seconds-to-time punch-out)))
-              (prompt-which (format "Adjust in (%s) or out (%s) time? "
-                                    punch-in-time punch-out-time))
-              (which (completing-read prompt-which '(in out) nil t))
-              (punch-field (if (equal "in" which) 'punch-in 'punch-out))
-              (direction (completing-read "Adjust to earlier or later time? "
-                                          '(earlier later) nil t))
-              (hours (string-to-number (read-from-minibuffer (format "Hours %s: " direction))))
-              (minutes (string-to-number (read-from-minibuffer (format "Minutes %s: " direction))))
-              (adjustment-seconds (+ (* minutes 60) (* hours 60 60)))
-              (adjustment (if (equal direction "earlier")
-                              (- adjustment-seconds) adjustment-seconds)))
-         (timeclock//db-adjust-time entry-id punch-field adjustment)
-         (timeclock/report nil timeclock/last-report-span))))))
+                               (let* ((id (car (last obj)))
+                                      (task (timeclock//db-get-task id)))
+                                 (-let (((title is-feature punch-in punch-out notes duration entry-id) (car task)))
+                                   (let* ((punch-in-time (format-time-string "%R" (seconds-to-time punch-in)))
+                                          (punch-out-time (format-time-string "%R" (seconds-to-time punch-out)))
+                                          (prompt-which (format "Adjust in (%s) or out (%s) time? "
+                                                                punch-in-time punch-out-time))
+                                          (which (completing-read prompt-which '(in out) nil t))
+                                          (punch-field (if (equal "in" which) 'punch-in 'punch-out))
+                                          (direction (completing-read "Adjust to earlier or later time? "
+                                                                      '(earlier later) nil t))
+                                          (hours (string-to-number (read-from-minibuffer (format "Hours %s: " direction))))
+                                          (minutes (string-to-number (read-from-minibuffer (format "Minutes %s: " direction))))
+                                          (adjustment-seconds (+ (* minutes 60) (* hours 60 60)))
+                                          (adjustment (if (equal direction "earlier")
+                                                          (- adjustment-seconds) adjustment-seconds)))
+                                     (timeclock//db-adjust-time entry-id punch-field adjustment)
+                                     (timeclock/report nil timeclock/last-report-span))))))
 
 (defun timeclock//edit-object-note (obj)
   "A vtable action to edit the task note."
-   (timeclock//edit-note obj))
+  (timeclock//edit-note obj))
 
 (defun timeclock//report-detail-section-table (range feature-flag)
   "Produce the daily vtables for the report detail."
