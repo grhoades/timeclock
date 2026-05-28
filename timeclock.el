@@ -380,12 +380,12 @@ attributes present in the daily detail section of the report."
   "Attempt to restore point after an edit action.
 
 XXX: This macro is not hygenic; call it a WIP."
-  `(let ((eid (eid (car (last obj))))
-         ,body
-         (goto-char (point-min))
-         (if (search-forward (concat "entry-id:" (number-to-string eid)) nil t)
-             (beginning-of-line)
-           (goto-char (point-min))))))
+  `(let ((eid (car (last ,obj))))
+     ,body
+     (goto-char (point-min))
+     (if (search-forward (concat "entry-id:" (number-to-string eid)) nil t)
+         (beginning-of-line)
+       (goto-char (point-min)))))
 
 (defun timeclock//set-object-flag (obj)
   "A vtable action to toggle the is-feature flag."
