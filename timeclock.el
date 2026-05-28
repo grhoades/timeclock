@@ -639,7 +639,7 @@ XXX: This macro is not hygenic; call it a WIP."
                  WHERE entry_id = ?")))
     (sqlite-execute db stmt `(,adjustment ,id))))
 
-(defun timeclock//adjust-time (range feature-flag)
+(defun timeclock//report (range feature-flag)
   (let ((db (timeclock/database)))
     (sqlite-select
      db
