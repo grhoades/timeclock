@@ -248,6 +248,11 @@ which case the user is not prompted."
                          "Report: "
                          timeclock/report-span-hash nil t)))
          (span-clause (gethash span-text timeclock/report-span-hash)))
+    (if (string= span-text "Custom Range")
+        (let ((start (read-string "Start Date (YYYY-MM-DD): "))
+              (end (read-string "End Date (YYYY-MM-DD) [inclusive]: ")))
+          (setq span-text (format "Custom Range: %s to %s" start end))
+          (setq span-clause (format "unixepoch(clock_in, 'unixepoch', 'localtime') >= unixepoch('%s', 'start of day') AND unixepoch(clock_in, 'unixepoch', 'localtime') < unixepoch('%s', 'start of day', '+1 day')" start end))))
     (list span-text span-clause)))
 
 (defun timeclock//report-summary-section-header (span-description)
@@ -753,14 +758,20 @@ XXX: This macro is not hygenic; call it a WIP."
    unixepoch(clock_in, 'unixepoch', 'localtime') <
    unixepoch('now', 'localtime', 'start of month')")
 
+(defun timeclock//span-ytd ()
+  "unixepoch(clock_in, 'unixepoch', 'localtime') >=
+   unixepoch('now', 'localtime', 'start of year')")
+
 (defun timeclock//default-report-span-hash ()
   (let ((spans (make-hash-table :test 'equal)))
-    (puthash "Today"      (timeclock//span-today)      spans)
-    (puthash "Yesterday"  (timeclock//span-yesterday)  spans)
-    (puthash "This Week"  (timeclock//span-this-week)  spans)
-    (puthash "Last Week"  (timeclock//span-last-week)  spans)
-    (puthash "This Month" (timeclock//span-this-month) spans)
-    (puthash "Last Month" (timeclock//span-last-month) spans)
+    (puthash "Today"        (timeclock//span-today)      spans)
+    (puthash "Yesterday"    (timeclock//span-yesterday)  spans)
+    (puthash "This Week"    (timeclock//span-this-week)  spans)
+    (puthash "Last Week"    (timeclock//span-last-week)  spans)
+    (puthash "This Month"   (timeclock//span-this-month) spans)
+    (puthash "Last Month"   (timeclock//span-last-month) spans)
+    (puthash "YTD"          (timeclock//span-ytd)        spans)
+    (puthash "Custom Range" nil                          spans)
     spans))
 
 (defvar timeclock/report-span-hash (timeclock//default-report-span-hash)
