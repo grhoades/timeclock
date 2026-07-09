@@ -385,12 +385,12 @@ attributes present in the daily detail section of the report."
   "Attempt to restore point after an edit action.
 
 XXX: This macro is not hygenic; call it a WIP."
-  `(let ((eid (eid (car (last obj))))
-         ,body
-         (goto-char (point-min))
-         (if (search-forward (concat "entry-id:" (number-to-string eid)) nil t)
-             (beginning-of-line)
-           (goto-char (point-min))))))
+  `(let ((eid (car (last ,obj))))
+     ,body
+     (goto-char (point-min))
+     (if (search-forward (concat "entry-id:" (number-to-string eid)) nil t)
+         (beginning-of-line)
+       (goto-char (point-min)))))
 
 (defun timeclock//set-object-flag (obj)
   "A vtable action to toggle the is-feature flag."
@@ -644,7 +644,7 @@ XXX: This macro is not hygenic; call it a WIP."
                  WHERE entry_id = ?")))
     (sqlite-execute db stmt `(,adjustment ,id))))
 
-(defun timeclock//adjust-time (range feature-flag)
+(defun timeclock//report (range feature-flag)
   (let ((db (timeclock/database)))
     (sqlite-select
      db
